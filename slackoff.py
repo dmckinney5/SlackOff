@@ -63,12 +63,21 @@ def parse_slack_output(slack_rtm_output):
         for output in output_list:
             if 'user' in output:
                 user = slack_client.api_call('users.info',user=output['user'])
-            print output['type']
-            if output['type'] == 'message' and AT_BOT in output['text']:
+            #print output['type']
+            if output['type'] == 'message' and  'text' in  output and AT_BOT in output['text']:
                 if 'latest gb' in output['text'].lower():
                     message= "#Content #Monetize " + gb.entries[0]['link']
                     slack_client.api_call("chat.postMessage",channel=GENERAL_ID,text=message,link_names=True, as_user=True)
-                    print gb.entries[0]['link'] 
+                    #print gb.entries[0]['link'] 
+
+                if 'reddit top' in output['text'].lower():
+                    print output['text']
+                    ix = output['text'].index(':')
+                    sub = output['text'][ix+1:]
+                    link = 'https://www.reddit.com/r/'+sub+'.rss'
+                    reddit = feedparser.parse(link)
+                    message= "Top Post from " + sub + ' ' + reddit.entries[0]['link']
+                    slack_client.api_call("chat.postMessage",channel=GENERAL_ID,text=message,link_names=True, as_user=True)
 
 
                 if 'last online' in output['text']:
