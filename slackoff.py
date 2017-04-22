@@ -1,9 +1,20 @@
-import os, json
+import os, json,time,feedparser
 import time
 from slackclient import SlackClient
 
 BOT_ID = os.environ.get("BOT_ID")
-GENERAL_ID = 'C1Q371LJ3'
+GENERAL_ID = os.environ.get("GENERAL_ID")
+DB_ID = os.environ.get("DBID")
+DM_ID = os.environ.get("DMID")
+PM_ID = os.environ.get("PMID")
+BM_ID = os.environ.get("BMID")
+#DB_LAST = 0
+#DM_LAST = 0
+#PM_LAST = 0
+#BM_LAST = 0
+now = time.strftime("%c")
+accessDict = {DB_ID : now,DM_ID:now,PM_ID:now,BM_ID:now}
+#print accessDict
 # constants
 AT_BOT = "<@" + BOT_ID + ">"
 EXAMPLE_COMMAND = "do"
@@ -47,33 +58,62 @@ def parse_slack_output(slack_rtm_output):
         directed at the Bot, based on its ID.
     """
     output_list = slack_rtm_output
-    #print output_list
+    
     if output_list and len(output_list) > 0:
         for output in output_list:
-            #print output['type']
+            if 'user' in output:
+                user = slack_client.api_call('users.info',user=output['user'])
+            print output['type']
+            if output['type'] == 'message' and AT_BOT in output['text']:
+                if 'latest gb' in output['text'].lower():
+                    message= "#Content #Monetize " + gb.entries[0]['link']
+                    slack_client.api_call("chat.postMessage",channel=GENERAL_ID,text=message,link_names=True, as_user=True)
+                    print gb.entries[0]['link'] 
+
+
+                if 'last online' in output['text']:
+                    global accessDict
+                    usr = output['user']
+                    #user = slack_client.api_call('users.info',user=output['user'])
+                    message = 'Hey  '  + user['user']['profile']['first_name'] + '.You were last online: ' + accessDict[usr] + '. You can enter this timestamp into the search function with before:"your timestamp" to view messages around this time!'
+                    dmInfo = slack_client.api_call('im.open',user=output['user'])
+                    slack_client.api_call("chat.postMessage",channel=dmInfo['channel']['id'],text=message,link_names=True, as_user=True)
+                    #print dmInfo['channel']['id']
+                    #print output['text']
+
+
+
             if output['type'] == 'presence_change' and output['presence'] == 'active':
                 #UID = output['user']
-                user = slack_client.api_call('users.info',user=output['user'])
+                
                 #print user['real_name']
 
                 channels = slack_client.api_call('channels.list')
-                print(json.dumps(channels, indent=4))
-
-                #print user['user']['profile']['real_name']
                 #print slack_client.api_call('channels.list')
                 if 'bot_id' not in user['user']['profile']:
-                    message = 'Welcome Back ' + user['user']['profile']['first_name']
+                    message = 'Welcome Back ' + user['user']['profile']['first_name'] + '. To view messages since you were last on enter command @slackoff last online'
                     slack_client.api_call("chat.postMessage",channel=GENERAL_ID,text=message,link_names=True, as_user=True)
-                #if 
 
-                #user = slack_client.api_call('users.info',output['user'])
-                #print user['real_name']
+            if output['type'] == 'presence_change' and output['presence'] == 'away' and 'bot_id' not in user['user']['profile']:
+                if output['user'] == DB_ID:
+                    DB_LAST = int(time.time())
+                    accessDict = {DB_ID : DB_LAST}
+                elif output['user'] == DM_ID:
+                    DM_LAST  = int(time.time())
+                    accessDict[DM_LAST] = DM_LAST
+                elif output['user'] == PM_ID:
+                    PM_LAST = int(time.time())
+                    accessDict[PM_LAST] = PM_LAST
+                elif output['user'] == BM_ID:    
+                    BM_LAST = int(time.time())
+                    accessDict[BM_LAST] = BM_LAST
 
-            if output and 'text' in output and AT_BOT in output['text'] and 'user' in output and 'channel' in output:
-                # return text after the @ mention, whitespace removed
-                command = output['text'].split(AT_BOT)[1].strip().lower()
-                channel = output['channel']
-                user = output['user']
+
+            #if output and 'text' in output and AT_BOT in output['text'] and 'user' in output and 'channel' in output:
+            #    # return text after the @ mention, whitespace removed
+            #    command = output['text'].split(AT_BOT)[1].strip().lower()
+            #    channel = output['channel']
+            #    user = output['user']
 
                 return command, channel, user
     return None, None
@@ -81,10 +121,11 @@ def parse_slack_output(slack_rtm_output):
 
 if __name__ == "__main__":
     READ_WEBSOCKET_DELAY = 1 # 1 second delay between reading from firehose
+    gb =  feedparser.parse('http://www.giantbomb.com/feeds/video/.rss/')
     if slack_client.rtm_connect():
         print("SlackOff connected and running")
-        users = slack_client.api_call('users.list')
-        print(json.dumps(users, indent=4))
+        #users = slack_client.api_call('users.list')
+        #print(json.dumps(users, indent=4))
 
         while True:
             #slack_client.rtm_read()
