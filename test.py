@@ -4,7 +4,11 @@ def test(url):
 	return rss.entries[0]['link']
 
 def test_answer():
-	assert isinstance(test('https://www.reddit.com/r/all/.rss'),str)
+	result = test('https://www.reddit.com/r/all/.rss')
+	if 'reddit' in result:
+		return 0
+	else:
+		return 1
 	
 	
 if __name__ == "__main__":
