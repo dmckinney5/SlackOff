@@ -1,4 +1,4 @@
-import os, json,time,feedparser
+import os, json,time,feedparser, requests
 import time
 from slackclient import SlackClient
 
