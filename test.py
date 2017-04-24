@@ -1,6 +1,6 @@
 import feedparser
 def test(url):
-	rss = feedparser.parse(link)
+	rss = feedparser.parse(url)
 	return rss.entries[0]['link']
 
 def test_answer():
