@@ -5,3 +5,7 @@ def test(url):
 
 def test_answer():
 	assert isinstance(test(reddit),str)
+	
+	
+if __name__ == "__main__":
+	test_answer()
