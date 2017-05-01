@@ -1,53 +1,51 @@
 import os, json,time,feedparser, requests
 import time
 from slackclient import SlackClient
-
+# MAKE SURE TO NOT UPLOAD THE FREAKING TOKEN IN THE FUTURE.
+# Currently hardcoded to specific user IDs. This doesnt generalize to other teams well. Need to fix this in the interest of open source.
 BOT_ID = os.environ.get("BOT_ID")
 GENERAL_ID = os.environ.get("GENERAL_ID")
 DB_ID = os.environ.get("DBID")
 DM_ID = os.environ.get("DMID")
 PM_ID = os.environ.get("PMID")
 BM_ID = os.environ.get("BMID")
-#DB_LAST = 0
-#DM_LAST = 0
-#PM_LAST = 0
-#BM_LAST = 0
+
+# This is handled poorly. Will need changing if I am ever hosting this long term (raspberry pi idea).
 now = time.strftime("%c")
 accessDict = {DB_ID : now,DM_ID:now,PM_ID:now,BM_ID:now}
 #print accessDict
 # constants
 AT_BOT = "<@" + BOT_ID + ">"
-EXAMPLE_COMMAND = "do"
+
 self_deprecation = 'self deprecation'
-self_dep2 = 'just fuck my shit up'
+
 find_last = 'last access'
-gtfo = 'just fuck off'
-pin = 'pin'
+
 
 # instantiate Slack & Twilio clients
 slack_client = SlackClient(os.environ.get('SLACK_BOT_TOKEN'))
 
 
-def handle_command(command):
-    """
-        Receives commands directed at the bot and determines if they
-        are valid commands. If so, then acts on the commands. If not,
-        returns back what it needs for clarification.
-    """
-    api_call = slack_client.api_call("users.list")
-    users = api_call.get('members')
+#def handle_command(command):
+#    """
+#        Receives commands directed at the bot and determines if they
+#        are valid commands. If so, then acts on the commands. If not,
+#        returns back what it needs for clarification.
+#    """
+#    api_call = slack_client.api_call("users.list")
+#    users = api_call.get('members')
 
-    if command[0].startswith(self_deprecation) or command[0].startswith(self_dep2) :
-    	response = "<@"+command[2]+"> --"
-        slack_client.api_call("chat.postMessage", channel=command[1],
-                              text=response,link_names=True, as_user=True)
-    elif command[0].startswith(gtfo):
-    	response = ""
-        slack_client.api_call("chat.postMessage", channel=command[1],
-            text=response,link_names=True, as_user=True)
-    elif command[0].startswith(find_last):
-    	access = slack_client.api_call("team.accessLogs")
-    	print access
+ #   if command[0].startswith(self_deprecation) or command[0].startswith(self_dep2) :
+ #   	response = "<@"+command[2]+"> --"
+ #       slack_client.api_call("chat.postMessage", channel=command[1],
+ #                             text=response,link_names=True, as_user=True)
+ #   elif command[0].startswith(gtfo):
+ #   	response = ""
+ #       slack_client.api_call("chat.postMessage", channel=command[1],
+ #           text=response,link_names=True, as_user=True)
+ #   elif command[0].startswith(find_last):
+ #   	access = slack_client.api_call("team.accessLogs")
+ #   	print access
 
 
 
@@ -93,10 +91,6 @@ def parse_slack_output(slack_rtm_output):
 
 
             if output['type'] == 'presence_change' and output['presence'] == 'active':
-                #UID = output['user']
-                
-                #print user['real_name']
-
                 channels = slack_client.api_call('channels.list')
                 #print slack_client.api_call('channels.list')
                 if 'bot_id' not in user['user']['profile']:
