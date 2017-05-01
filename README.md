@@ -9,5 +9,6 @@ LastTimeActive: call command '@slackoff last online'. Bot returns time stamp use
 LatestGBVid: call command '@slackoff latest gb vid'. Sends message with latest GiantBomb.com video content.
 
 LatestGBPod: call command '@slackoff latest gb pod'. Sends message with latest GiantBomb.com podcast.
+NOTE: *Probably* done. Need to properly test when I get a new slack token
 
 RedditTop: call command '@slackoff top reddit:'subName'. Returns link to top post of given subreddit
