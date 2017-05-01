@@ -6,6 +6,8 @@ LocalForecast
 # Finished
 LastTimeActive: call command '@slackoff last online'. Bot returns time stamp user was last online, searchable in messages with 'before:returnedTimeStamp'. Unfortunately bots are unable to do the search.messages API.
 
-LatestGBVid: call command '@slackoff latest gb'. Sends message with latest GiantBomb.com video content.
+LatestGBVid: call command '@slackoff latest gb vid'. Sends message with latest GiantBomb.com video content.
+
+LatestGBPod: call command '@slackoff latest gb pod'. Sends message with latest GiantBomb.com podcast.
 
 RedditTop: call command '@slackoff top reddit:'subName'. Returns link to top post of given subreddit
