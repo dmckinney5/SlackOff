@@ -64,9 +64,15 @@ def parse_slack_output(slack_rtm_output):
             #print output['type']
             if output['type'] == 'message' and  'text' in  output and AT_BOT in output['text']:
                 if 'latest gb' in output['text'].lower():
-                    message= "#Content #Monetize " + gb.entries[0]['link']
-                    slack_client.api_call("chat.postMessage",channel=GENERAL_ID,text=message,link_names=True, as_user=True)
+                    if 'vid' in output['text'].lower():
+                        gb =  feedparser.parse('http://www.giantbomb.com/feeds/video/.rss/')
+                        message= "#Content #Monetize " + gb.entries[0]['link']
+                        slack_client.api_call("chat.postMessage",channel=GENERAL_ID,text=message,link_names=True, as_user=True)
                     #print gb.entries[0]['link'] 
+                    elif 'podcast' in output['text'].lower():
+                        gb =  feedparser.parse('http://www.giantbomb.com/feeds/podcast/.rss/')
+                        message= "#Content #Monetize " + gb.entries[0]['link']
+                        slack_client.api_call("chat.postMessage",channel=GENERAL_ID,text=message,link_names=True, as_user=True)                     
 
                 if 'reddit top' in output['text'].lower():
                     print output['text']
@@ -124,7 +130,6 @@ def parse_slack_output(slack_rtm_output):
 
 if __name__ == "__main__":
     READ_WEBSOCKET_DELAY = 1 # 1 second delay between reading from firehose
-    gb =  feedparser.parse('http://www.giantbomb.com/feeds/video/.rss/')
     if slack_client.rtm_connect():
         print("SlackOff connected and running")
         #users = slack_client.api_call('users.list')
