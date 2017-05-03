@@ -1,4 +1,4 @@
-import os, json,time,feedparser, requests
+import os, json,time,feedparser, pyowm
 import time
 from slackclient import SlackClient
 # MAKE SURE TO NOT UPLOAD THE FREAKING TOKEN IN THE FUTURE.
@@ -9,6 +9,9 @@ DB_ID = os.environ.get("DBID")
 DM_ID = os.environ.get("DMID")
 PM_ID = os.environ.get("PMID")
 BM_ID = os.environ.get("BMID")
+WEATHER_KEY = os.environ.get("PY_OWM_API")
+
+owm = pyowm.OWM(WEATHER_KEY)  
 
 # This is handled poorly. Will need changing if I am ever hosting this long term (raspberry pi idea).
 now = time.strftime("%c")
@@ -58,6 +61,17 @@ def parse_slack_output(slack_rtm_output):
                 user = slack_client.api_call('users.info',user=output['user'])
             #print output['type']
             if output['type'] == 'message' and  'text' in  output and AT_BOT in output['text']:
+
+                if 'weather' in output['text'].lower():
+                    ix = output['text'].index(':')
+                    place = output['text'][ix+1:] 
+                    obs = owm.weather_at_place(place)
+                    weather = obs.get_weather()
+                    message= "In " + place + 'it is' + weather.get_temperature('fahrenheit')['temp'] + ' degrees and ' + weather.get_status() 
+                    slack_client.api_call("chat.postMessage",channel=GENERAL_ID,text=message,link_names=True, as_user=True)
+    
+
+
                 if 'latest gb' in output['text'].lower():
                     if 'vid' in output['text'].lower():
                         gb =  feedparser.parse('http://www.giantbomb.com/feeds/video/.rss/')
@@ -124,20 +138,25 @@ def parse_slack_output(slack_rtm_output):
 
 
 if __name__ == "__main__":
-    READ_WEBSOCKET_DELAY = 1 # 1 second delay between reading from firehose
-    if slack_client.rtm_connect():
-        print("SlackOff connected and running")
+    obs = owm.weather_at_place('Boulder,CO')
+    weather = obs.get_weather()
+    print weather.get_temperature('fahrenheit')['temp']
+    print weather.get_status() 
+    
+    #READ_WEBSOCKET_DELAY = 1 # 1 second delay between reading from firehose
+    #if slack_client.rtm_connect():
+    #    print("SlackOff connected and running")
         #users = slack_client.api_call('users.list')
         #print(json.dumps(users, indent=4))
 
-        while True:
+    #    while True:
             #slack_client.rtm_read()
-            parse_slack_output(slack_client.rtm_read())
+    #        parse_slack_output(slack_client.rtm_read())
             #if command[0] and command[1] and command[2]:
             #    handle_command(command)
-            time.sleep(READ_WEBSOCKET_DELAY)
-    else:
-        print("Connection failed. Invalid Slack token or bot ID?")
+    #        time.sleep(READ_WEBSOCKET_DELAY)
+    #else:
+    #    print("Connection failed. Invalid Slack token or bot ID?")
 
 
 
